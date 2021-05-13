@@ -18,6 +18,7 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release -DLOGLEVEL=DEBUG -DUSE_PARALLEL=true .. && 
 FROM base as runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y wget python3-yaml unzip curl bzip2 pkg-config libicu-dev python3-icu libgomp1
+RUN apt-get install -y openjdk-11-jre
 
 ARG UID=1000
 RUN groupadd -r qlever && useradd --no-log-init -r -u $UID -g qlever qlever && chown qlever:qlever /app
@@ -39,6 +40,6 @@ ENTRYPOINT ["/bin/sh", "-c", "exec ServerMain -i \"/index/${INDEX_PREFIX}\" -j 8
 
 # Build image:  docker build -t qlever.pr355-plus .
 
-# Build index:  DB=wikidata; docker run -it --rm -v $(pwd):/index --entrypoint bash --name qlever.$DB-index qlever.pr355-plus -c "IndexBuilderMain -f /index/$DB.nt -i /index/$DB -s /index/$DB.settings.json | tee /index/$DB.index-log.txt"; rm -f $DB/*tmp*
+# Build index:  DB=wikidata; docker run -it --rm -v $(pwd):/index --entrypoint bash --name qlever.$DB-index qlever.pr355-plus -c "IndexBuilderMain -f /index/$DB.nt -i /index/$DB -s /index/$DB.settings.json | tee /index/$DB.index-log.txt"; rm -f *tmp*
 
 # Run engine:   DB=wikidata; PORT=7001; docker rm -f qlever.$DB; docker run -d --restart=unless-stopped -v $(pwd):/index -p $PORT:7001 -e INDEX_PREFIX=$DB -e MEMORY_FOR_QUERIES=30 --name qlever.$DB qlever.pr355-plus; docker logs -f --tail=100 qlever.$DB

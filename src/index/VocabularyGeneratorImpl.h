@@ -51,7 +51,9 @@ VocabularyMerger::VocMergeRes VocabularyMerger::mergeVocabulary(const std::strin
   for (size_t i = 0; i < numFiles; i++) {
     infiles.emplace_back(basename + PARTIAL_VOCAB_FILE_NAME + std::to_string(i));
     _idVecs.emplace_back(0, basename + PARTIAL_MMAP_IDS + std::to_string(i));
-    AD_CHECK(infiles.back().is_open());
+    // HACK HANNAH 16.04.2021: AD_CHECK with file name.
+    AD_CHECK_WITH_MESSAGE(infiles.back().is_open(),
+      std::string(basename + PARTIAL_VOCAB_FILE_NAME + std::to_string(i)));
 
     // read the first entry of the vocabulary and add it to the queue
     endOfFile[i] = true;

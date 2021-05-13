@@ -1434,6 +1434,14 @@ LangtagAndTriple Index::tripleToInternalRepresentation(Triple&& tripleIn) {
   for (auto& el : spo) {
     el = _vocab.getLocaleManager().normalizeUtf8(el);
   }
+
+  // UNIPROT HACK (Hannah 15.04.2021): Externalize all literals from triples
+  // with predicate <http://www.w3.org/1999/02/22-rdf-syntax-ns#value>
+  bool isUniprotProtein =
+    spo[1] == "<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>";
+  // LOG(DEBUG) << "Predicate (for debugging): \"" << spo[1] << "\"" << endl;
+  // LOG(DEBUG) << "isUniprotProtein: " << isUniprotProtein << endl;
+
   size_t upperBound = 3;
   if (ad_utility::isXsdValue(spo[2])) {
     spo[2] = ad_utility::convertValueLiteralToIndexWord(spo[2]);
@@ -1443,7 +1451,11 @@ LangtagAndTriple Index::tripleToInternalRepresentation(Triple&& tripleIn) {
   }
 
   for (size_t k = 0; k < upperBound; ++k) {
-    if (_onDiskLiterals && _vocab.shouldBeExternalized(spo[k])) {
+    // UNIPROT HACK (Hannah 15.04.2021): Also externalize all literals objects
+    // of triples with predicate
+    // <http://www.w3.org/1999/02/22-rdf-syntax-ns#value>
+    if (_onDiskLiterals && (_vocab.shouldBeExternalized(spo[k]) ||
+           (k == 2 && isUniprotProtein))) {
       if (isLiteral(spo[k])) {
         spo[k][0] = EXTERNALIZED_LITERALS_PREFIX_CHAR;
       } else {

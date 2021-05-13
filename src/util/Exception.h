@@ -34,6 +34,7 @@ using std::string;
 // --------------------------------------------------------------------------
 // Needed for Cygwin (will be an identical redefine  for *nixes)
 #define __STRING(x) #x
+
 //! Custom assert which does not abort but throws an exception
 #define AD_CHECK(condition)                                                  \
   {                                                                          \
@@ -41,6 +42,17 @@ using std::string;
       AD_THROW(ad_semsearch::Exception::ASSERT_FAILED, __STRING(condition)); \
     }                                                                        \
   }  // NOLINT
+
+//! HACK HANNAH (for debugging an isOpen error message from a Uniprot build).
+#define AD_CHECK_WITH_MESSAGE(condition, m)                                  \
+  {                                                                          \
+    if (!(condition)) {                                                      \
+      std::ostringstream __os;                                               \
+      __os << __STRING(condition) << " -> " << m;                            \
+      AD_THROW(ad_semsearch::Exception::ASSERT_FAILED, __os.str());          \
+    }                                                                        \
+  }  // NOLINT
+
 //! Assert equality, and show values if fails
 #define AD_CHECK_EQ(t1, t2)                                           \
   {                                                                   \
